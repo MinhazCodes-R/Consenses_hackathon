@@ -1,0 +1,4 @@
+stellar is used for backend stellar wallet + aptos wallet
+steller will be used for frontend and backend (if issue we switch to flutter)
+
+expo app fully

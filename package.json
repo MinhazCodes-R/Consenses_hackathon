@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@stellar/stellar-sdk": "^13.3.0",
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
+    "node-fetch": "^2.7.0",
+    "postgre": "^0.1.8",
+    "random-words": "^2.0.1"
+  }
+}
