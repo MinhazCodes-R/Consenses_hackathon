@@ -86,10 +86,10 @@ const Navbar = () => {
             <NavLink to="/send">Send</NavLink>
             <Button onClick={handleLogout}>Logout</Button>
           </>
-        ) : (
-          <>
+        ) : (          <>
             <NavLink to="/login">Login</NavLink>
             <NavLink to="/register">Register</NavLink>
+            <NavLink to="/demo">Demo Wallet</NavLink>
           </>
         )}
       </NavLinks>

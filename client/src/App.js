@@ -11,6 +11,7 @@ import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
 import SendForm from './components/SendForm';
 import ReceiveForm from './components/ReceiveForm';
+import DemoWallet from './components/DemoWallet';
 import './App.css';
 
 // Protected route component
@@ -31,9 +32,9 @@ const AppContent = () => {
       <Router>
         <Navbar />
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-          <Route path="/login" element={<LoginForm />} />
+          <Route path="/" element={<Navigate to="/dashboard" />} />          <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
+          <Route path="/demo" element={<DemoWallet />} />
           <Route 
             path="/dashboard" 
             element={

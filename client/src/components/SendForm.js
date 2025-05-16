@@ -169,13 +169,33 @@ const SendForm = () => {
     const value = e.target.value.replace(/[^0-9.]/g, '');
     setAmount(value);
   };
-  
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     
+    // Client-side validation
+    if (!destination.startsWith('G') || destination.length !== 56) {
+      setError('Invalid Stellar address. It should start with G and be 56 characters long.');
+      setLoading(false);
+      return;
+    }
+    
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      setError('Please enter a valid positive amount');
+      setLoading(false);
+      return;
+    }
+    
     try {
+      console.log('Sending payment:', {
+        userId: currentUser.userId,
+        destinationKey: destination,
+        amount,
+        memo
+      });
+      
       const response = await sendPayment(
         currentUser.userId,
         destination,
@@ -183,14 +203,20 @@ const SendForm = () => {
         memo
       );
       
-      if (response.data.status === 'success') {
+      console.log('Payment response:', response);
+      
+      if (response.data && response.data.status === 'success') {
         setSuccess(true);
         setTxHash(response.data.hash);
       } else {
-        setError(response.data.message || 'Transaction failed');
+        const errorMessage = response.data?.message || 'Transaction failed with unknown error';
+        console.error('Payment error:', errorMessage);
+        setError(errorMessage);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send payment');
+      console.error('Payment request error:', err);
+      const errorMessage = err.response?.data?.message || 'Failed to send payment. Please check your connection and try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
