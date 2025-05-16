@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -99,21 +99,51 @@ const LoginForm = () => {
   
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
+    // Check for URL parameters that might indicate auto-login
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const autoEmail = params.get('email');
+    const autoPassword = params.get('password');
+    
+    if (autoEmail && autoPassword) {
+      setEmail(autoEmail);
+      setPassword(autoPassword);
+      // Automatically submit the form
+      handleLogin(autoEmail, autoPassword);
+    }
+    
+    // Check if coming from demo page
+    const isDemoLogin = params.get('demo') === 'true';
+    if (isDemoLogin) {
+      setEmail('demo@example.com');
+      setPassword('password123');
+      // Auto-login for demo account
+      handleLogin('demo@example.com', 'password123');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (emailToUse, passwordToUse) => {
     setError('');
     setLoading(true);
     
     try {
-      const response = await login(email, password);
+      console.log('Attempting login with:', { email: emailToUse });
+      const response = await login(emailToUse, passwordToUse);
+      console.log('Login response:', response.data);
       authLogin(response.data);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to login');
-    } finally {
+      console.error('Login error:', err);
+      const errorMsg = err.response?.data?.message || 'Failed to login';
+      setError(errorMsg);
       setLoading(false);
     }
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await handleLogin(email, password);
   };
   
   return (

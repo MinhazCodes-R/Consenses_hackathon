@@ -162,10 +162,9 @@ const DemoWallet = () => {
         
         <InfoGroup>
           <Label>Password</Label>
-          <Value>{demoWallet.loginCredentials.password}</Value>
-        </InfoGroup>
+          <Value>{demoWallet.loginCredentials.password}</Value>        </InfoGroup>
         
-        <ActionButton onClick={() => window.location.href = '/login'}>
+        <ActionButton onClick={() => window.location.href = '/login?demo=true'}>
           Login to Demo Account
         </ActionButton>
       </Card>
