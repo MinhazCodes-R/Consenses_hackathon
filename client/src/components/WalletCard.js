@@ -11,7 +11,7 @@ const CardContainer = styled.div`
   border: 1px solid rgba(138, 43, 226, 0.3);
   position: relative;
   overflow: hidden;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -44,7 +44,7 @@ const RefreshButton = styled.button`
   color: ${props => props.theme.colors.primary};
   cursor: pointer;
   transition: ${props => props.theme.transitions.default};
-  
+
   &:hover {
     color: ${props => props.theme.colors.primaryLight};
     transform: rotate(45deg);
@@ -65,7 +65,7 @@ const BalanceAmount = styled.div`
   font-size: 2.5rem;
   font-weight: bold;
   color: ${props => props.theme.colors.primary};
-  
+
   .currency {
     font-size: 1rem;
     color: ${props => props.theme.colors.textSecondary};
@@ -102,7 +102,7 @@ const CopyButton = styled.button`
   color: ${props => props.theme.colors.primary};
   cursor: pointer;
   margin-left: ${props => props.theme.spacing.md};
-  
+
   &:hover {
     color: ${props => props.theme.colors.primaryLight};
   }
@@ -120,13 +120,12 @@ const WalletCard = ({ publicKey }) => {
   const [balance, setBalance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  
+
   const fetchBalance = async () => {
     setLoading(true);
     try {
       const response = await getBalance(publicKey);
       if (response.data.status === 'success') {
-        // Native asset is XLM
         setBalance(response.data.balances['native'] || '0');
       }
     } catch (error) {
@@ -135,19 +134,21 @@ const WalletCard = ({ publicKey }) => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     if (publicKey) {
       fetchBalance();
     }
   }, [publicKey]);
-  
+
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(publicKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (publicKey) {
+      navigator.clipboard.writeText(publicKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
-  
+
   return (
     <CardContainer>
       <CardHeader>
@@ -156,7 +157,7 @@ const WalletCard = ({ publicKey }) => {
           <span role="img" aria-label="refresh">🔄</span>
         </RefreshButton>
       </CardHeader>
-      
+
       {loading ? (
         <LoadingContainer>Loading balance...</LoadingContainer>
       ) : (
@@ -167,14 +168,18 @@ const WalletCard = ({ publicKey }) => {
           </BalanceAmount>
         </BalanceContainer>
       )}
-      
+
       <WalletAddress>
         <AddressLabel>Wallet Address</AddressLabel>
         <AddressValue>
-          {publicKey.substring(0, 8)}...{publicKey.substring(publicKey.length - 4)}
-          <CopyButton onClick={copyToClipboard}>
-            {copied ? 'Copied!' : 'Copy'}
-          </CopyButton>
+          {publicKey
+            ? `${publicKey.substring(0, 8)}...${publicKey.substring(publicKey.length - 4)}`
+            : 'No address available'}
+          {publicKey && (
+            <CopyButton onClick={copyToClipboard}>
+              {copied ? 'Copied!' : 'Copy'}
+            </CopyButton>
+          )}
         </AddressValue>
       </WalletAddress>
     </CardContainer>

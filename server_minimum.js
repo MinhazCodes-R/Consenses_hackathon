@@ -1,11 +1,16 @@
 const express = require('express');
+const cors = require('cors');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// PostgreSQL connection setup
+// Middleware
+app.use(cors());
+app.use(express.json()); // Automatically parses JSON from requests
+
+// PostgreSQL connection config
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
@@ -23,31 +28,13 @@ pool.connect((err, client, release) => {
   release();
 });
 
-// Body parser (no headers required)
-app.use((req, res, next) => {
-  let rawData = '';
-  req.on('data', chunk => rawData += chunk);
-  req.on('end', () => {
-    if (req.method === 'POST') {
-      console.log(`\n--- POST to ${req.url} ---`);
-      console.log('Raw body:', rawData);
-    }
-    try {
-      req.body = rawData ? JSON.parse(rawData) : {};
-    } catch (err) {
-      console.error('JSON parse error:', err.message);
-      req.body = {};
-    }
-    next();
-  });
-});
-
-// ✅ Registration route
+// ✅ Register endpoint
 app.post('/api/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { username, email, password } = req.body;
+  console.log('\n--- POST /api/register ---');
   console.log('Parsed body:', req.body);
 
-  if (!email || !password) {
+  if (!username || !email || !password) {
     return res.status(400).json({ status: 'error', message: 'Missing required fields' });
   }
 
@@ -59,8 +46,8 @@ app.post('/api/register', async (req, res) => {
 
     const userId = uuidv4();
     await pool.query(
-      'INSERT INTO users (id, email, password) VALUES ($1, $2, $3)',
-      [userId, email, password]
+      'INSERT INTO users (id, email, password, username) VALUES ($1, $2, $3, $4)',
+      [userId, email, password, username]
     );
 
     res.json({ status: 'success', message: 'User registered', userId });
@@ -70,9 +57,10 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// ✅ Login route
+// ✅ Login endpoint
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
+  console.log('\n--- POST /api/login ---');
   console.log('Parsed body:', req.body);
 
   if (!email || !password) {
@@ -89,14 +77,21 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ status: 'error', message: 'Invalid credentials' });
     }
 
-    res.json({ status: 'success', message: 'Login successful', userId: result.rows[0].id });
+    const user = result.rows[0];
+
+    res.json({
+      status: 'success',
+      message: 'Login successful',
+      userId: user.id,
+      username: user.username,
+    });
   } catch (err) {
     console.error('DB query error:', err.message);
     res.status(500).json({ status: 'error', message: 'Database error' });
   }
 });
 
-// Start server
+// ✅ Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });

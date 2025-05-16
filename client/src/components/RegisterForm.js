@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, Link } from 'react-router-dom';
@@ -98,20 +99,20 @@ const RegisterForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
-    const handleSubmit = async (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validation
+
     if (password !== confirmPassword) {
       return setError('Passwords do not match');
     }
-    
+
     setError('');
     setLoading(true);
-    
+
     try {
       const response = await register(username, email, password);
       login(response.data);
@@ -119,89 +120,63 @@ const RegisterForm = () => {
     } catch (err) {
       console.error('Registration failed:', err);
       setError(err.response?.data?.message || 'Failed to register');
-      
-      // If normal registration fails, try the test endpoint
-      try {
-        console.log('Trying test registration endpoint...');
-        const testResponse = await fetch('http://localhost:5000/api/register-test', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ username, email, password }),
-        });
-        
-        const testData = await testResponse.json();
-        
-        if (testData.status === 'success') {
-          console.log('Test registration successful!');
-          login(testData);
-          navigate('/dashboard');
-        } else {
-          console.error('Test registration also failed:', testData);
-          setError(`Test registration also failed: ${testData.message || 'Unknown error'}`);
-        }
-      } catch (testErr) {
-        console.error('Test registration error:', testErr);
-        setError(`Failed to register with both methods. Please check server logs.`);
-      }
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <FormContainer>
       <Title>Create Account</Title>
-      
+
       {error && <ErrorMessage>{error}</ErrorMessage>}
-      
+
       <Form onSubmit={handleSubmit}>
         <FormGroup>
           <Label>Username</Label>
-          <Input 
-            type="text" 
-            value={username} 
+          <Input
+            type="text"
+            value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
         </FormGroup>
-        
+
         <FormGroup>
           <Label>Email</Label>
-          <Input 
-            type="email" 
-            value={email} 
+          <Input
+            type="email"
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </FormGroup>
-        
+
         <FormGroup>
           <Label>Password</Label>
-          <Input 
-            type="password" 
-            value={password} 
+          <Input
+            type="password"
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
         </FormGroup>
-        
+
         <FormGroup>
           <Label>Confirm Password</Label>
-          <Input 
-            type="password" 
-            value={confirmPassword} 
+          <Input
+            type="password"
+            value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
         </FormGroup>
-        
+
         <Button type="submit" disabled={loading}>
           {loading ? 'Creating Account...' : 'Register'}
         </Button>
       </Form>
-      
+
       <LoginLink>
         Already have an account?<Link to="/login">Login</Link>
       </LoginLink>
