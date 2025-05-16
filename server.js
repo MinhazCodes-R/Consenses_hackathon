@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const { exec } = require('child_process');
 const { v4: uuidv4 } = require('uuid');
-const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
@@ -16,7 +15,7 @@ const transactions = [];
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'client/build')));
 
 // Helper function to execute Python script
