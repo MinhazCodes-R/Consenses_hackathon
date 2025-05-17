@@ -34,21 +34,21 @@ const ActionButton = styled(Link)`
   display: flex;
   align-items: center;
   gap: ${props => props.theme.spacing.sm};
-  background-color: ${props => props.primary ? props.theme.colors.primary : 'transparent'};
-  color: ${props => props.primary ? 'white' : props.theme.colors.primary};
-  border: ${props => props.primary ? 'none' : `1px solid ${props.theme.colors.primary}`};
+  background-color: ${props => props.$primary ? props.theme.colors.primary : 'transparent'};
+  color: ${props => props.$primary ? 'white' : props.theme.colors.primary};
+  border: ${props => props.$primary ? 'none' : `1px solid ${props.theme.colors.primary}`};
   padding: ${props => props.theme.spacing.md} ${props => props.theme.spacing.lg};
   border-radius: ${props => props.theme.borderRadius.medium};
   text-decoration: none;
   font-weight: 600;
   transition: ${props => props.theme.transitions.default};
-  
+
   &:hover {
-    background-color: ${props => props.primary ? props.theme.colors.primaryLight : 'rgba(138, 43, 226, 0.1)'};
+    background-color: ${props => props.$primary ? props.theme.colors.primaryLight : 'rgba(138, 43, 226, 0.1)'};
     transform: translateY(-2px);
     text-decoration: none;
   }
-  
+
   .icon {
     font-size: 1.2rem;
   }
@@ -79,33 +79,36 @@ const NoTransactions = styled.div`
 `;
 
 const Dashboard = () => {
-  const { currentUser } = useAuth();
-  
-  if (!currentUser) {
-    return null;
+  const { currentUser, loading } = useAuth();
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', marginTop: '2rem' }}>Loading dashboard...</div>;
   }
-  
+
+  if (!currentUser) {
+    return <div style={{ textAlign: 'center', marginTop: '2rem' }}>Please log in to access your dashboard.</div>;
+  }
+
   return (
     <DashboardContainer>
       <DashboardHeader>
         <Title>Welcome back, {currentUser.username}!</Title>
         <Subtitle>Manage your Stellar assets and transactions</Subtitle>
       </DashboardHeader>
-      
+
       <WalletCard publicKey={currentUser.publicKey} />
-      
+
       <ActionButtons>
-        <ActionButton to="/send" primary={true}>
+        <ActionButton to="/send" $primary>
           <span className="icon">📤</span> Send Funds
         </ActionButton>
         <ActionButton to="/receive">
           <span className="icon">📥</span> Receive Funds
         </ActionButton>
       </ActionButtons>
-      
+
       <TransactionsSection>
         <SectionTitle>Recent Transactions</SectionTitle>
-        
         <TransactionsList>
           <NoTransactions>
             No transactions yet. Send or receive funds to see your transaction history.

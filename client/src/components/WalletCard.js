@@ -1,188 +1,165 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { getBalance } from '../api';
+import { FiRefreshCw, FiCopy } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
-const CardContainer = styled.div`
-  background-color: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.borderRadius.large};
-  padding: ${props => props.theme.spacing.xl};
-  margin-bottom: ${props => props.theme.spacing.xl};
-  box-shadow: ${props => props.theme.shadows.medium};
-  border: 1px solid rgba(138, 43, 226, 0.3);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at top right, 
-      rgba(138, 43, 226, 0.3) 0%, 
-      rgba(138, 43, 226, 0) 60%);
-    pointer-events: none;
-  }
+// Styled components
+const Card = styled.div`
+  background: linear-gradient(135deg, #7c3aed20 0%, #e879f920 100%);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 `;
 
-const CardHeader = styled.div`
+const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ${props => props.theme.spacing.lg};
 `;
 
-const WalletTitle = styled.h2`
-  color: ${props => props.theme.colors.text};
-  font-size: 1.25rem;
+const Title = styled.h2`
+  margin: 0;
+  font-size: 1.5rem;
+  color: #5b21b6;
 `;
 
-const RefreshButton = styled.button`
+const Refresh = styled.button`
   background: none;
   border: none;
-  color: ${props => props.theme.colors.primary};
   cursor: pointer;
-  transition: ${props => props.theme.transitions.default};
-
-  &:hover {
-    color: ${props => props.theme.colors.primaryLight};
-    transform: rotate(45deg);
-  }
+  color: #5b21b6;
+  transition: color 0.2s;
+  &:hover { color: #d946ef; }
 `;
 
-const BalanceContainer = styled.div`
-  margin-bottom: ${props => props.theme.spacing.lg};
-`;
-
-const BalanceLabel = styled.div`
-  color: ${props => props.theme.colors.textSecondary};
-  font-size: 0.9rem;
-  margin-bottom: ${props => props.theme.spacing.xs};
-`;
-
-const BalanceAmount = styled.div`
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: ${props => props.theme.colors.primary};
-
-  .currency {
-    font-size: 1rem;
-    color: ${props => props.theme.colors.textSecondary};
-    margin-left: ${props => props.theme.spacing.xs};
-  }
-`;
-
-const WalletAddress = styled.div`
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: ${props => props.theme.spacing.md};
-  border-radius: ${props => props.theme.borderRadius.medium};
-  margin-top: ${props => props.theme.spacing.lg};
-`;
-
-const AddressLabel = styled.div`
-  color: ${props => props.theme.colors.textSecondary};
-  font-size: 0.8rem;
-  margin-bottom: ${props => props.theme.spacing.xs};
-`;
-
-const AddressValue = styled.div`
+const BalanceSection = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+`;
+
+const Label = styled.div`
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+`;
+
+const Balance = styled.div`
+  font-size: 2rem;
+  font-weight: 600;
+  color: #7e22ce;
+  display: flex;
+  align-items: baseline;
+  .unit { font-size: 1rem; color: #6b7280; margin-left: 4px; }
+`;
+
+const AddressContainer = styled.div`
+  background: #ffffff;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex;
   align-items: center;
-  color: ${props => props.theme.colors.text};
+  justify-content: space-between;
+`;
+
+const AddressText = styled.code`
   font-family: monospace;
-  font-size: 0.9rem;
-  word-break: break-all;
+  color: #4b5563;
+  overflow-wrap: anywhere;
 `;
 
-const CopyButton = styled.button`
+const CopyBtn = styled.button`
   background: none;
   border: none;
-  color: ${props => props.theme.colors.primary};
   cursor: pointer;
-  margin-left: ${props => props.theme.spacing.md};
-
-  &:hover {
-    color: ${props => props.theme.colors.primaryLight};
-  }
-`;
-
-const LoadingContainer = styled.div`
+  color: #7c3aed;
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100px;
-  color: ${props => props.theme.colors.textSecondary};
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  &:hover { color: #a78bfa; }
 `;
 
-const WalletCard = ({ publicKey }) => {
-  const [balance, setBalance] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
+const Loading = styled.div`
+  color: #6b7280;
+`;
 
-  const fetchBalance = async () => {
+const ErrorMsg = styled.div`
+  color: #e11d48;
+  background-color: #fee2e2;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+`;
+
+const WalletCard = () => {
+  const { currentUser } = useAuth();
+  const publicKey = currentUser?.publicKey;
+  const [balance, setBalance] = useState('--');
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState('');
+
+  const fetchStellarBalance = async () => {
+    if (!publicKey) return;
     setLoading(true);
+    setError('');
     try {
-      const response = await getBalance(publicKey);
-      if (response.data.status === 'success') {
-        setBalance(response.data.balances['native'] || '0');
+      const { data } = await axios.post('http://localhost:3001/check', { public_key: publicKey });
+      if (data.status === 'success') {
+        setBalance(data.balances.native);
+      } else {
+        setError(data.message || 'Failed to fetch balance');
       }
-    } catch (error) {
-      console.error('Error fetching balance:', error);
+    } catch (err) {
+      console.error('Error fetching stellar balance:', err);
+      setError('Unable to fetch on-chain balance');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (publicKey) {
-      fetchBalance();
-    }
-  }, [publicKey]);
+  useEffect(() => { fetchStellarBalance(); }, [publicKey]);
 
-  const copyToClipboard = () => {
-    if (publicKey) {
-      navigator.clipboard.writeText(publicKey);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  const copyAddress = () => {
+    if (!publicKey) return;
+    navigator.clipboard.writeText(publicKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   return (
-    <CardContainer>
-      <CardHeader>
-        <WalletTitle>Stellar Wallet</WalletTitle>
-        <RefreshButton onClick={fetchBalance}>
-          <span role="img" aria-label="refresh">🔄</span>
-        </RefreshButton>
-      </CardHeader>
+    <Card>
+      <Header>
+        <Title>Stellar Wallet</Title>
+        <Refresh onClick={fetchStellarBalance} aria-label="Refresh Balance">
+          <FiRefreshCw size={20} />
+        </Refresh>
+      </Header>
 
-      {loading ? (
-        <LoadingContainer>Loading balance...</LoadingContainer>
-      ) : (
-        <BalanceContainer>
-          <BalanceLabel>Available Balance</BalanceLabel>
-          <BalanceAmount>
-            {balance} <span className="currency">XLM</span>
-          </BalanceAmount>
-        </BalanceContainer>
+      {!publicKey && <ErrorMsg>No wallet linked to this user.</ErrorMsg>}
+
+      {publicKey && (
+        <>
+          {error && <ErrorMsg>{error}</ErrorMsg>}
+
+          <BalanceSection>
+            <Label>Available Balance</Label>
+            {loading ? (<Loading>Loading…</Loading>) : (<Balance>{balance}<span className="unit">XLM</span></Balance>)}
+          </BalanceSection>
+
+          <AddressContainer>
+            <AddressText>{publicKey}</AddressText>
+            <CopyBtn onClick={copyAddress} aria-label="Copy Address">
+              {copied ? 'Copied!' : 'Copy'} <FiCopy style={{ marginLeft: '4px' }} />
+            </CopyBtn>
+          </AddressContainer>
+        </>
       )}
-
-      <WalletAddress>
-        <AddressLabel>Wallet Address</AddressLabel>
-        <AddressValue>
-          {publicKey
-            ? `${publicKey.substring(0, 8)}...${publicKey.substring(publicKey.length - 4)}`
-            : 'No address available'}
-          {publicKey && (
-            <CopyButton onClick={copyToClipboard}>
-              {copied ? 'Copied!' : 'Copy'}
-            </CopyButton>
-          )}
-        </AddressValue>
-      </WalletAddress>
-    </CardContainer>
+    </Card>
   );
 };
 

@@ -10,20 +10,29 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in (from localStorage)
+  // Load user from localStorage on mount
   useEffect(() => {
     const userData = localStorage.getItem('user');
+    console.log('🗄️ Loaded from storage:', userData);
     if (userData) {
       setCurrentUser(JSON.parse(userData));
     }
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    setCurrentUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  // Log in user and persist to localStorage
+  const login = (data) => {
+    const user = {
+      userId: data.userId,
+      username: data.username,
+      publicKey: data.publicKey,
+    };
+    console.log('🔑 Logged-in user:', user);
+    setCurrentUser(user);
+    localStorage.setItem('user', JSON.stringify(user));
   };
 
+  // Log out user and clear localStorage
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem('user');
@@ -33,6 +42,7 @@ export function AuthProvider({ children }) {
     currentUser,
     login,
     logout,
+    loading,
   };
 
   return (

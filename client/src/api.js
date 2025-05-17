@@ -1,3 +1,4 @@
+// src/api.js
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5001/api';
@@ -9,24 +10,40 @@ const api = axios.create({
   },
 });
 
-export const register = (username, email, password) => {
-  return api.post('/register', { username, email, password });
-};
+// -- User auth --
+export const register = (username, email, password, publicKey, privateKey) =>
+  api.post('/register', {
+    username,
+    email,
+    password,
+    publicKey,
+    privateKey,
+  });
 
-export const login = (email, password) => {
-  return api.post('/login', { email, password });
-};
+export const login = (email, password) =>
+  api.post('/login', { email, password });
 
-export const getBalance = (publicKey) => {
-  return api.get(`/balance/${publicKey}`);
-};
+// -- Wallet lookup --
+export const getWallet = (userId) =>
+  api.get(`/wallet/${userId}`);
 
-export const getWallet = (userId) => {
-  return api.get(`/wallet/${userId}`);
-};
+// -- Account management --
+export const createAccount = () =>
+  api.post('/accounts');
 
-export const sendPayment = (userId, destinationKey, amount, memo) => {
-  return api.post('/send', { userId, destinationKey, amount, memo });
-};
+export const getBalance = (accountId) =>
+  api.get(`/accounts/${accountId}/balance`);
+
+export const getTransactions = (accountId) =>
+  api.get(`/transactions/${accountId}`);
+
+// -- Payments (legacy `/send` alias → `/transactions`) --
+export const sendPayment = (sourceId, destinationId, amount, memo) =>
+  api.post('/send', {
+    userId: sourceId,
+    destinationKey: destinationId,
+    amount,
+    memo,
+  });
 
 export default api;

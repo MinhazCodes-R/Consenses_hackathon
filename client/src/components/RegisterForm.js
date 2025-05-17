@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, Link } from 'react-router-dom';
@@ -97,6 +96,8 @@ const RegisterForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [publicKey, setPublicKey] = useState('');
+  const [privateKey, setPrivateKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -110,11 +111,15 @@ const RegisterForm = () => {
       return setError('Passwords do not match');
     }
 
+    if (!publicKey || !privateKey) {
+      return setError('Wallet keys are required');
+    }
+
     setError('');
     setLoading(true);
 
     try {
-      const response = await register(username, email, password);
+      const response = await register(username, email, password, publicKey, privateKey);
       login(response.data);
       navigate('/dashboard');
     } catch (err) {
@@ -134,42 +139,32 @@ const RegisterForm = () => {
       <Form onSubmit={handleSubmit}>
         <FormGroup>
           <Label>Username</Label>
-          <Input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
+          <Input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
         </FormGroup>
 
         <FormGroup>
           <Label>Email</Label>
-          <Input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </FormGroup>
 
         <FormGroup>
           <Label>Password</Label>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </FormGroup>
 
         <FormGroup>
           <Label>Confirm Password</Label>
-          <Input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
+          <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Public Key</Label>
+          <Input type="text" value={publicKey} onChange={(e) => setPublicKey(e.target.value)} required placeholder="G..." />
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Private Key</Label>
+          <Input type="text" value={privateKey} onChange={(e) => setPrivateKey(e.target.value)} required placeholder="S..." />
         </FormGroup>
 
         <Button type="submit" disabled={loading}>

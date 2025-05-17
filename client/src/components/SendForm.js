@@ -159,13 +159,12 @@ const SendForm = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [txHash, setTxHash] = useState('');
+  const [txId, setTxId] = useState('');
   
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   
   const handleAmountChange = (e) => {
-    // Only allow numbers and decimal point
     const value = e.target.value.replace(/[^0-9.]/g, '');
     setAmount(value);
   };
@@ -185,7 +184,7 @@ const SendForm = () => {
       
       if (response.data.status === 'success') {
         setSuccess(true);
-        setTxHash(response.data.hash);
+        setTxId(response.data.transactionId);
       } else {
         setError(response.data.message || 'Transaction failed');
       }
@@ -205,10 +204,12 @@ const SendForm = () => {
           <SuccessMessage>
             You have successfully sent {amount} XLM to the destination address.
           </SuccessMessage>
-          {txHash && (
+          {txId && (
             <div style={{ marginBottom: '1.5rem', wordBreak: 'break-all' }}>
-              <Label>Transaction Hash</Label>
-              <div style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>{txHash}</div>
+              <Label>Transaction ID</Label>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                {txId}
+              </div>
             </div>
           )}
           <BackButton onClick={() => navigate('/dashboard')}>
@@ -222,15 +223,14 @@ const SendForm = () => {
   return (
     <SendContainer>
       <Title>Send XLM</Title>
-      
       <FormCard>
         <form onSubmit={handleSubmit}>
           <FormGroup>
             <Label>Destination Address</Label>
-            <Input 
-              type="text" 
-              value={destination} 
-              onChange={(e) => setDestination(e.target.value)}
+            <Input
+              type="text"
+              value={destination}
+              onChange={e => setDestination(e.target.value)}
               placeholder="G..."
               required
             />
@@ -238,9 +238,9 @@ const SendForm = () => {
           
           <FormGroup>
             <Label>Amount (XLM)</Label>
-            <Input 
-              type="text" 
-              value={amount} 
+            <Input
+              type="text"
+              value={amount}
               onChange={handleAmountChange}
               placeholder="0.0000000"
               required
@@ -249,9 +249,9 @@ const SendForm = () => {
           
           <FormGroup>
             <Label>Memo (Optional)</Label>
-            <TextArea 
-              value={memo} 
-              onChange={(e) => setMemo(e.target.value)}
+            <TextArea
+              value={memo}
+              onChange={e => setMemo(e.target.value)}
               placeholder="Add an optional memo for this transaction"
             />
           </FormGroup>
