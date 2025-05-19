@@ -107,7 +107,7 @@ const WalletCard = () => {
   const fetchWalletKeys = async () => {
     if (!userId) return;
     try {
-      const { data } = await axios.get(`http://localhost:5001/api/wallet/${userId}`);
+      const { data } = await axios.get(`http://18.216.120.154:5001/api/wallet/${userId}`);
       if (data.status === 'success') {
         setPublicKey(data.publicKey);
       } else {
