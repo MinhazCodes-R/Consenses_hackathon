@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3001
 
 # Run your app (adjust if your filename is different)
-CMD ["python", "app.py"]
+CMD ["python", "stellar_friendbot.py"]
