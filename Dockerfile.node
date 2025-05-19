@@ -1,0 +1,21 @@
+# Use official Node.js LTS image
+FROM node:20
+
+# Create app directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json (if it exists)
+COPY package*.json ./
+
+# Install app dependencies
+RUN npm install
+
+# Copy the rest of your source code
+COPY . .
+
+# Expose the port your app runs on (adjust if not 5001)
+EXPOSE 5001
+
+# Start the server
+CMD ["node", "server_minimum copy.js"]
+

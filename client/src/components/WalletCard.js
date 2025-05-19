@@ -97,11 +97,27 @@ const ErrorMsg = styled.div`
 
 const WalletCard = () => {
   const { currentUser } = useAuth();
-  const publicKey = currentUser?.publicKey;
+  const userId = currentUser?.userId;
+  const [publicKey, setPublicKey] = useState('');
   const [balance, setBalance] = useState('--');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
+
+  const fetchWalletKeys = async () => {
+    if (!userId) return;
+    try {
+      const { data } = await axios.get(`http://localhost:5001/api/wallet/${userId}`);
+      if (data.status === 'success') {
+        setPublicKey(data.publicKey);
+      } else {
+        setError(data.message || 'No wallet linked to this user');
+      }
+    } catch (err) {
+      console.error('Error fetching wallet keys:', err);
+      setError('No wallet linked to this user');
+    }
+  };
 
   const fetchStellarBalance = async () => {
     if (!publicKey) return;
@@ -122,6 +138,7 @@ const WalletCard = () => {
     }
   };
 
+  useEffect(() => { fetchWalletKeys(); }, [userId]);
   useEffect(() => { fetchStellarBalance(); }, [publicKey]);
 
   const copyAddress = () => {
@@ -140,7 +157,7 @@ const WalletCard = () => {
         </Refresh>
       </Header>
 
-      {!publicKey && <ErrorMsg>No wallet linked to this user.</ErrorMsg>}
+      {!publicKey && <ErrorMsg>{error || 'No wallet linked to this user.'}</ErrorMsg>}
 
       {publicKey && (
         <>

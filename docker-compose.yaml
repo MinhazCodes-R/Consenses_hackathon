@@ -10,9 +10,41 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: txdb
     ports:
-      - '5433:5432'  # Host port 5433 → Container port 5432
+      - '5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  node-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    container_name: tx-node
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '5001:5001'
+    environment:
+      DATABASE_URL: postgres://postgres:password@postgres:5432/txdb
+    restart: unless-stopped
+
+  flask-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: tx-python
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '3001:3001'
+    restart: unless-stopped
 
 volumes:
   pgdata:
