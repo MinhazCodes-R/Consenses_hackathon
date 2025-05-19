@@ -3,17 +3,23 @@ const cors = require('cors');
 const axios = require('axios');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
+require('dotenv').config();
+const FRONTENDIP = process.env.FRONTENDIP;
+
+
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 const FLASK_API = 'http://flask-server:3001';
 
+
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: FRONTENDIP,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
   credentials: true,
 }));
+
 app.options('*', cors());
 
 app.use(express.json());

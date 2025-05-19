@@ -3,9 +3,16 @@ from flask_cors import CORS
 from stellar_sdk import Keypair, Server, Asset, Network, TransactionBuilder
 from stellar_sdk.exceptions import NotFoundError
 import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+FRONTENDIP = os.getenv("FRONTENDIP", "http://localhost:3000")
+
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/*": {"origins": FRONTENDIP}})
+
 server = Server("https://horizon-testnet.stellar.org")
 
 # Utility functions
