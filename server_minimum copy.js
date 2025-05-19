@@ -6,7 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
-const FLASK_API = 'http://localhost:3001';
+const FLASK_API = 'http://flask-server:3001';
 
 app.use(cors({
   origin: 'http://localhost:3000',
@@ -20,10 +20,10 @@ app.use(express.json());
 
 const pool = new Pool({
   user: 'postgres',
-  host: 'localhost',
+  host: 'postgres',
   database: 'txdb',
   password: 'password',
-  port: 5433,
+  port: 5432,
 });
 pool.connect((err, client, release) => {
   if (err) {
