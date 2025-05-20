@@ -107,7 +107,7 @@ const WalletCard = () => {
   const fetchWalletKeys = async () => {
     if (!userId) return;
     try {
-      const { data } = await axios.get(`http://ran-backend-domain.shop/api/wallet/${userId}`);
+      const { data } = await axios.get(`https://ran-backend-domain.shop/api/wallet/${userId}`);
       if (data.status === 'success') {
         setPublicKey(data.publicKey);
       } else {
@@ -124,7 +124,7 @@ const WalletCard = () => {
     setLoading(true);
     setError('');
     try {
-      const { data } = await axios.post('http://ran-backend-domain.shop/flask/check', { public_key: publicKey });
+      const { data } = await axios.post('https://ran-backend-domain.shop/flask/check', { public_key: publicKey });
       if (data.status === 'success') {
         setBalance(data.balances.native);
       } else {

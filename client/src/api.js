@@ -1,7 +1,7 @@
 // src/api.js
 import axios from 'axios';
 
-const API_URL = 'http://ran-backend-domain.shop/api';
+const API_URL = 'https://ran-backend-domain.shop/api';
 
 const api = axios.create({
   baseURL: API_URL,
