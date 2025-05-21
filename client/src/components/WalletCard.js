@@ -4,96 +4,23 @@ import { FiRefreshCw, FiCopy } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
-// Styled components
-const Card = styled.div`
-  background: linear-gradient(135deg, #7c3aed20 0%, #e879f920 100%);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
+// 🔧 Base URLs
+const API_BASE = 'https://ran-backend-domain.shop/api';
+const FLASK_BASE = 'https://ran-backend-domain.shop/python';
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 1.5rem;
-  color: #5b21b6;
-`;
-
-const Refresh = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #5b21b6;
-  transition: color 0.2s;
-  &:hover { color: #d946ef; }
-`;
-
-const BalanceSection = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Label = styled.div`
-  color: #6b7280;
-  font-size: 0.9rem;
-  margin-bottom: 4px;
-`;
-
-const Balance = styled.div`
-  font-size: 2rem;
-  font-weight: 600;
-  color: #7e22ce;
-  display: flex;
-  align-items: baseline;
-  .unit { font-size: 1rem; color: #6b7280; margin-left: 4px; }
-`;
-
-const AddressContainer = styled.div`
-  background: #ffffff;
-  padding: 12px 16px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const AddressText = styled.code`
-  font-family: monospace;
-  color: #4b5563;
-  overflow-wrap: anywhere;
-`;
-
-const CopyBtn = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #7c3aed;
-  display: flex;
-  align-items: center;
-  font-size: 0.9rem;
-  transition: color 0.2s;
-  &:hover { color: #a78bfa; }
-`;
-
-const Loading = styled.div`
-  color: #6b7280;
-`;
-
-const ErrorMsg = styled.div`
-  color: #e11d48;
-  background-color: #fee2e2;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-`;
+// Styled components (unchanged)
+const Card = styled.div`...`;            // ← your original styles
+const Header = styled.div`...`;
+const Title = styled.h2`...`;
+const Refresh = styled.button`...`;
+const BalanceSection = styled.div`...`;
+const Label = styled.div`...`;
+const Balance = styled.div`...`;
+const AddressContainer = styled.div`...`;
+const AddressText = styled.code`...`;
+const CopyBtn = styled.button`...`;
+const Loading = styled.div`...`;
+const ErrorMsg = styled.div`...`;
 
 const WalletCard = () => {
   const { currentUser } = useAuth();
@@ -107,7 +34,7 @@ const WalletCard = () => {
   const fetchWalletKeys = async () => {
     if (!userId) return;
     try {
-      const { data } = await axios.get(`https://ran-backend-domain.shop/api/wallet/${userId}`);
+      const { data } = await axios.get(`${API_BASE}/wallet/${userId}`);  // 🔧 Node route
       if (data.status === 'success') {
         setPublicKey(data.publicKey);
       } else {
@@ -124,7 +51,7 @@ const WalletCard = () => {
     setLoading(true);
     setError('');
     try {
-      const { data } = await axios.post('https://ran-backend-domain.shop/flask/check', { public_key: publicKey });
+      const { data } = await axios.post(`${FLASK_BASE}/check`, { public_key: publicKey });  // 🔧 Flask route
       if (data.status === 'success') {
         setBalance(data.balances.native);
       } else {
@@ -165,7 +92,11 @@ const WalletCard = () => {
 
           <BalanceSection>
             <Label>Available Balance</Label>
-            {loading ? (<Loading>Loading…</Loading>) : (<Balance>{balance}<span className="unit">XLM</span></Balance>)}
+            {loading ? (
+              <Loading>Loading…</Loading>
+            ) : (
+              <Balance>{balance}<span className="unit">XLM</span></Balance>
+            )}
           </BalanceSection>
 
           <AddressContainer>

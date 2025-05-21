@@ -1,18 +1,29 @@
 // src/api.js
 import axios from 'axios';
 
-const API_URL = 'https://ran-backend-domain.shop/api';
+// Base URLs mapped to Nginx proxy
+const NODE_API_URL = 'https://ran-backend-domain.shop/api';
+const FLASK_API_URL = 'https://ran-backend-domain.shop/python';
 
-const api = axios.create({
-  baseURL: API_URL,
+const nodeApi = axios.create({
+  baseURL: NODE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+const flaskApi = axios.create({
+  baseURL: FLASK_API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// ─────────────── Node backend routes ───────────────
+
 // -- User auth --
 export const register = (username, email, password, publicKey, privateKey) =>
-  api.post('/register', {
+  nodeApi.post('/register', {
     username,
     email,
     password,
@@ -21,29 +32,38 @@ export const register = (username, email, password, publicKey, privateKey) =>
   });
 
 export const login = (email, password) =>
-  api.post('/login', { email, password });
+  nodeApi.post('/login', { email, password });
 
 // -- Wallet lookup --
 export const getWallet = (userId) =>
-  api.get(`/wallet/${userId}`);
+  nodeApi.get(`/wallet/${userId}`);
 
 // -- Account management --
 export const createAccount = () =>
-  api.post('/accounts');
+  nodeApi.post('/accounts');
 
 export const getBalance = (accountId) =>
-  api.get(`/accounts/${accountId}/balance`);
+  nodeApi.get(`/accounts/${accountId}/balance`);
 
 export const getTransactions = (accountId) =>
-  api.get(`/transactions/${accountId}`);
+  nodeApi.get(`/transactions/${accountId}`);
 
 // -- Payments (legacy `/send` alias → `/transactions`) --
 export const sendPayment = (sourceId, destinationId, amount, memo) =>
-  api.post('/send', {
+  nodeApi.post('/send', {
     userId: sourceId,
     destinationKey: destinationId,
     amount,
     memo,
   });
 
-export default api;
+// ─────────────── Flask backend routes (example) ───────────────
+
+// Replace with real Flask endpoints when used
+export const getStellarInfo = () =>
+  flaskApi.get('/stellar-info');
+
+export default {
+  nodeApi,
+  flaskApi,
+};
