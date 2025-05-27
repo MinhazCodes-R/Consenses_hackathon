@@ -2,13 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { FiRefreshCw, FiCopy } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import { getWallet, checkBalance } from '../api';
 
-// 🔧 Base URLs
-const API_BASE = 'https://ran-backend-domain.shop/api';
-const FLASK_BASE = 'https://ran-backend-domain.shop/python';
-
-// Styled components
 const Card = styled.div`
   background: linear-gradient(135deg, #ede9fe, #fdf4ff);
   border-radius: 16px;
@@ -117,7 +112,7 @@ const WalletCard = () => {
   const fetchWalletKeys = async () => {
     if (!userId) return;
     try {
-      const { data } = await axios.get(`${API_BASE}/wallet/${userId}`);
+      const { data } = await getWallet(userId);
       if (data.status === 'success') {
         setPublicKey(data.publicKey);
       } else {
@@ -134,7 +129,7 @@ const WalletCard = () => {
     setLoading(true);
     setError('');
     try {
-      const { data } = await axios.post(`${FLASK_BASE}/check`, { public_key: publicKey });
+      const { data } = await checkBalance(publicKey);
       if (data.status === 'success') {
         setBalance(data.balances.native);
       } else {

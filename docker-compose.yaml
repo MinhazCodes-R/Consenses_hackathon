@@ -9,9 +9,10 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: txdb
+    ports:
+      - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -30,6 +31,7 @@ services:
       - '5001:5001'
     environment:
       DATABASE_URL: postgres://postgres:password@postgres:5432/txdb
+      FLASK_API: http://flask-server:3001
     restart: unless-stopped
 
   flask-server:
@@ -42,6 +44,8 @@ services:
         condition: service_healthy
     ports:
       - '3001:3001'
+    environment:
+      FRONTENDIP: http://localhost:3000
     restart: unless-stopped
 
 volumes:

@@ -6,23 +6,22 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# ───── Load frontend origin ─────
+# ───── Load environment variables ─────
 load_dotenv()
 FRONTENDIP = os.getenv("FRONTENDIP", "http://localhost:3000")
 
+# ───── Flask setup ─────
 app = Flask(__name__)
-
-# 🔧 Updated CORS to support OPTIONS and JSON headers
 CORS(app,
-     resources={r"/*": {"origins": FRONTENDIP}},
+     resources={r"/*": {"origins": [FRONTENDIP, "http://localhost:3000", "https://consenses-hackathon-zt67.vercel.app"]}},
      supports_credentials=True,
      methods=["GET", "POST", "OPTIONS"],
      allow_headers=["Content-Type"])
 
+# ───── Stellar SDK setup ─────
 server = Server("https://horizon-testnet.stellar.org")
 
 # ───── Utility functions ─────
-
 def check_balance(public_key):
     try:
         account = server.accounts().account_id(public_key).call()
@@ -35,6 +34,7 @@ def send_payment(source_secret, destination_public_key, amount, memo="Transactio
     try:
         source_key = Keypair.from_secret(source_secret)
 
+        # Validate destination
         try:
             server.load_account(destination_public_key)
         except NotFoundError:
@@ -82,9 +82,8 @@ def create_account():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# ───── Core Routes ─────
-
-@app.route('/check', methods=['POST', 'OPTIONS'])
+# ───── Routes ─────
+@app.route('/check', methods=['POST'])
 def api_check():
     data = request.get_json() or {}
     public_key = data.get('public_key')
@@ -92,7 +91,7 @@ def api_check():
         return jsonify({"status": "error", "message": "public_key is required"}), 400
     return jsonify(check_balance(public_key))
 
-@app.route('/send', methods=['POST', 'OPTIONS'])
+@app.route('/send', methods=['POST'])
 def api_send():
     data = request.get_json() or {}
     source = data.get('source_secret')
@@ -106,30 +105,23 @@ def api_send():
 
     return jsonify(send_payment(source, destination, amount, memo))
 
-@app.route('/create', methods=['POST', 'OPTIONS'])
+@app.route('/create', methods=['POST'])
 def api_create():
     return jsonify(create_account())
 
-# ───── Mirror /python/* Routes (used by Nginx proxy) ─────
-
-@app.route('/python/check', methods=['POST', 'OPTIONS'])
+# ───── Nginx passthrough mirror routes ─────
+@app.route('/python/check', methods=['POST'])
 def api_check_passthrough():
-    if request.method == 'OPTIONS':
-        return '', 200
     return api_check()
 
-@app.route('/python/send', methods=['POST', 'OPTIONS'])
+@app.route('/python/send', methods=['POST'])
 def api_send_passthrough():
-    if request.method == 'OPTIONS':
-        return '', 200
     return api_send()
 
-@app.route('/python/create', methods=['POST', 'OPTIONS'])
+@app.route('/python/create', methods=['POST'])
 def api_create_passthrough():
-    if request.method == 'OPTIONS':
-        return '', 200
     return api_create()
 
-# ───── Start Flask ─────
+# ───── Start Server ─────
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3001)
