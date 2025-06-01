@@ -2,8 +2,8 @@
 import axios from 'axios';
 
 // Base URLs mapped to Nginx proxy
-const NODE_API_URL = 'http://localhost:5001/api';
-const FLASK_API_URL = 'http://localhost:3001/';
+const NODE_API_URL = 'https://ran-backend-domain.shop/api';
+const FLASK_API_URL = 'https://ran-backend-domain.shop/python';
 
 const nodeApi = axios.create({
   baseURL: NODE_API_URL,
