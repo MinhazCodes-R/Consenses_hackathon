@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
+import { initiateEscrow } from '../api';
 
 const ReceiveContainer = styled.div`
   max-width: 500px;
@@ -21,7 +22,7 @@ const Card = styled.div`
   border: 1px solid rgba(138, 43, 226, 0.3);
   position: relative;
   overflow: hidden;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -29,16 +30,9 @@ const Card = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at top right, 
-      rgba(138, 43, 226, 0.3) 0%, 
-      rgba(138, 43, 226, 0) 60%);
+    background: radial-gradient(circle at top right, rgba(138, 43, 226, 0.3) 0%, rgba(138, 43, 226, 0) 60%);
     pointer-events: none;
   }
-`;
-
-const AddressContainer = styled.div`
-  margin-top: ${props => props.theme.spacing.lg};
-  margin-bottom: ${props => props.theme.spacing.xl};
 `;
 
 const Label = styled.div`
@@ -47,18 +41,16 @@ const Label = styled.div`
   margin-bottom: ${props => props.theme.spacing.sm};
 `;
 
-const AddressBox = styled.div`
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: ${props => props.theme.spacing.lg};
+const Input = styled.input`
+  width: 100%;
+  padding: ${props => props.theme.spacing.md};
   border-radius: ${props => props.theme.borderRadius.medium};
-  word-break: break-all;
-  font-family: monospace;
-  color: ${props => props.theme.colors.text};
+  border: 1px solid #ccc;
   margin-bottom: ${props => props.theme.spacing.lg};
-  text-align: center;
+  font-size: 1rem;
 `;
 
-const CopyButton = styled.button`
+const SubmitButton = styled.button`
   background-color: ${props => props.theme.colors.primary};
   color: white;
   border: none;
@@ -68,67 +60,97 @@ const CopyButton = styled.button`
   cursor: pointer;
   transition: ${props => props.theme.transitions.default};
   width: 100%;
-  
+
   &:hover {
     background-color: ${props => props.theme.colors.primaryLight};
     transform: translateY(-2px);
   }
 `;
 
-const Instructions = styled.div`
-  margin-top: ${props => props.theme.spacing.xl};
-  color: ${props => props.theme.colors.textSecondary};
-  line-height: 1.6;
+const InfoBox = styled.div`
+  background-color: #ffffff;
+  color: #1f2937;
+  padding: ${props => props.theme.spacing.md};
+  border-radius: ${props => props.theme.borderRadius.medium};
+  margin-top: ${props => props.theme.spacing.lg};
+  text-align: center;
+  word-break: break-word;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 `;
 
-const QRCodeArea = styled.div`
-  margin: ${props => props.theme.spacing.xl} auto;
-  width: 200px;
-  height: 200px;
-  background-color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: ${props => props.theme.borderRadius.medium};
+const Error = styled.div`
+  color: red;
+  margin-bottom: ${props => props.theme.spacing.lg};
 `;
 
 const ReceiveForm = () => {
   const { currentUser } = useAuth();
-  const [copied, setCopied] = React.useState(false);
-  
-  if (!currentUser) {
-    return null;
-  }
-  
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(currentUser.publicKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const [amount, setAmount] = React.useState('');
+  const [keywordPair, setKeywordPair] = React.useState('');
+  const [escrowKey, setEscrowKey] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  if (!currentUser) return null;
+
+  const handleRequest = async () => {
+    setError('');
+    setKeywordPair('');
+    setEscrowKey('');
+    if (!amount || isNaN(amount)) {
+      setError('Please enter a valid amount');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await initiateEscrow(currentUser.userId, amount);
+      if (res.data.status === 'success') {
+        setKeywordPair(res.data.keywordPair);
+        setEscrowKey(res.data.escrowPublicKey);
+      } else {
+        setError(res.data.message || 'Failed to initiate escrow');
+      }
+    } catch (err) {
+      console.error('Request error:', err);
+      setError('Server error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
-  
+
   return (
     <ReceiveContainer>
-      <Title>Receive XLM</Title>
-      
+      <Title>Request XLM</Title>
+
       <Card>
-        <Label>Your wallet address</Label>
-        <AddressBox>
-          {currentUser.publicKey}
-        </AddressBox>
-        
-        <QRCodeArea>
-          {/* Placeholder for QR code */}
-          <div>QR Code of your address</div>
-        </QRCodeArea>
-        
-        <CopyButton onClick={copyToClipboard}>
-          {copied ? 'Address Copied!' : 'Copy Address'}
-        </CopyButton>
-        
-        <Instructions>
-          <p>Share your wallet address with anyone who wants to send you XLM. Make sure the sender is sending XLM on the Stellar network.</p>
-          <p>All incoming transactions will automatically be added to your wallet balance.</p>
-        </Instructions>
+        {error && <Error>{error}</Error>}
+
+        <Label>Enter Amount (XLM)</Label>
+        <Input
+          type="number"
+          placeholder="e.g. 5.0"
+          value={amount}
+          onChange={e => setAmount(e.target.value)}
+        />
+
+        <SubmitButton onClick={handleRequest} disabled={loading}>
+          {loading ? 'Requesting...' : 'Generate Escrow Keyword'}
+        </SubmitButton>
+
+        {keywordPair && (
+          <>
+            <InfoBox>
+              <strong>Keyword:</strong><br />{keywordPair}
+            </InfoBox>
+            <InfoBox>
+              <strong>Escrow Wallet:</strong><br />{escrowKey}
+            </InfoBox>
+            <InfoBox>
+              Share the above keyword with the sender. When they enter it, funds will be released to your account.
+            </InfoBox>
+          </>
+        )}
       </Card>
     </ReceiveContainer>
   );

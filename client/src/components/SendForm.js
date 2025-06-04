@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { sendPayment } from '../api';
+import { claimEscrow } from '../api';
 
+// Styled Components (same as before)
 const SendContainer = styled.div`
   max-width: 500px;
   margin: 0 auto;
@@ -23,7 +24,7 @@ const FormCard = styled.div`
   border: 1px solid rgba(138, 43, 226, 0.3);
   position: relative;
   overflow: hidden;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -31,9 +32,7 @@ const FormCard = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at top right, 
-      rgba(138, 43, 226, 0.3) 0%, 
-      rgba(138, 43, 226, 0) 60%);
+    background: radial-gradient(circle at top right, rgba(138, 43, 226, 0.3) 0%, rgba(138, 43, 226, 0) 60%);
     pointer-events: none;
   }
 `;
@@ -55,24 +54,7 @@ const Input = styled.input`
   border: 1px solid rgba(138, 43, 226, 0.3);
   background-color: rgba(255, 255, 255, 0.05);
   color: ${props => props.theme.colors.text};
-  
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.colors.primary};
-    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
-  }
-`;
 
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: ${props => props.theme.spacing.md};
-  border-radius: ${props => props.theme.borderRadius.medium};
-  border: 1px solid rgba(138, 43, 226, 0.3);
-  background-color: rgba(255, 255, 255, 0.05);
-  color: ${props => props.theme.colors.text};
-  min-height: 80px;
-  resize: vertical;
-  
   &:focus {
     outline: none;
     border-color: ${props => props.theme.colors.primary};
@@ -90,12 +72,12 @@ const SubmitButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: ${props => props.theme.transitions.default};
-  
+
   &:hover:not(:disabled) {
     background-color: ${props => props.theme.colors.primaryLight};
     transform: translateY(-2px);
   }
-  
+
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
@@ -145,7 +127,7 @@ const BackButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: ${props => props.theme.transitions.default};
-  
+
   &:hover {
     background-color: ${props => props.theme.colors.primaryLight};
     transform: translateY(-2px);
@@ -153,62 +135,49 @@ const BackButton = styled.button`
 `;
 
 const SendForm = () => {
-  const [destination, setDestination] = useState('');
-  const [amount, setAmount] = useState('');
-  const [memo, setMemo] = useState('');
+  const [keyword, setKeyword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [txId, setTxId] = useState('');
-  
+  const [txHash, setTxHash] = useState('');
+
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  
-  const handleAmountChange = (e) => {
-    const value = e.target.value.replace(/[^0-9.]/g, '');
-    setAmount(value);
-  };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
-      const response = await sendPayment(
-        currentUser.userId,
-        destination,
-        amount,
-        memo
-      );
-      
+      const response = await claimEscrow(currentUser.userId, keyword);
       if (response.data.status === 'success') {
         setSuccess(true);
-        setTxId(response.data.transactionId);
+        setTxHash(response.data.hash);
       } else {
         setError(response.data.message || 'Transaction failed');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send payment');
+      setError(err.response?.data?.message || 'Failed to claim escrow');
     } finally {
       setLoading(false);
     }
   };
-  
+
   if (success) {
     return (
       <SendContainer>
         <SuccessCard>
           <SuccessIcon>✅</SuccessIcon>
-          <SuccessTitle>Transaction Successful!</SuccessTitle>
+          <SuccessTitle>Escrow Claimed!</SuccessTitle>
           <SuccessMessage>
-            You have successfully sent {amount} XLM to the destination address.
+            Funds have been successfully claimed to your wallet.
           </SuccessMessage>
-          {txId && (
+          {txHash && (
             <div style={{ marginBottom: '1.5rem', wordBreak: 'break-all' }}>
-              <Label>Transaction ID</Label>
+              <Label>Transaction Hash</Label>
               <div style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                {txId}
+                {txHash}
               </div>
             </div>
           )}
@@ -219,47 +188,27 @@ const SendForm = () => {
       </SendContainer>
     );
   }
-  
+
   return (
     <SendContainer>
-      <Title>Send XLM</Title>
+      <Title>Send with Keyword</Title>
       <FormCard>
         <form onSubmit={handleSubmit}>
           <FormGroup>
-            <Label>Destination Address</Label>
+            <Label>Enter Keyword</Label>
             <Input
               type="text"
-              value={destination}
-              onChange={e => setDestination(e.target.value)}
-              placeholder="G..."
+              value={keyword}
+              onChange={e => setKeyword(e.target.value)}
+              placeholder="e.g. drum-carrot"
               required
             />
           </FormGroup>
-          
-          <FormGroup>
-            <Label>Amount (XLM)</Label>
-            <Input
-              type="text"
-              value={amount}
-              onChange={handleAmountChange}
-              placeholder="0.0000000"
-              required
-            />
-          </FormGroup>
-          
-          <FormGroup>
-            <Label>Memo (Optional)</Label>
-            <TextArea
-              value={memo}
-              onChange={e => setMemo(e.target.value)}
-              placeholder="Add an optional memo for this transaction"
-            />
-          </FormGroup>
-          
+
           <SubmitButton type="submit" disabled={loading}>
-            {loading ? 'Processing...' : 'Send XLM'}
+            {loading ? 'Claiming...' : 'Claim Escrow'}
           </SubmitButton>
-          
+
           {error && <ErrorMessage>{error}</ErrorMessage>}
         </form>
       </FormCard>

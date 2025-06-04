@@ -38,6 +38,13 @@ export const login = (email, password) =>
 export const getWallet = (userId) =>
   nodeApi.get(`/wallet/${userId}`);
 
+// -- Escrow --
+export const initiateEscrow = (userId, amount) =>
+  nodeApi.post('/escrow/initiate', { userId, amount });
+
+export const claimEscrow = (userId, keywordPair) =>
+  nodeApi.post('/escrow/claim', { userId, keywordPair });
+
 // -- Account management --
 export const createAccount = () =>
   nodeApi.post('/accounts');
@@ -59,11 +66,23 @@ export const sendPayment = (sourceId, destinationId, amount, memo) =>
 
 // ─────────────── Flask backend routes (example) ───────────────
 
-// Replace with real Flask endpoints when used
 export const getStellarInfo = () =>
   flaskApi.get('/stellar-info');
+
+export const checkBalance = (publicKey) =>
+  flaskApi.post('/check', { public_key: publicKey });
 
 export default {
   nodeApi,
   flaskApi,
+  register,
+  login,
+  getWallet,
+  createAccount,
+  getBalance,
+  getTransactions,
+  sendPayment,
+  initiateEscrow,
+  claimEscrow,
+  checkBalance,
 };
