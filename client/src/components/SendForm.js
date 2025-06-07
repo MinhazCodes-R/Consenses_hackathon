@@ -188,10 +188,9 @@ const SendForm = () => {
       </SendContainer>
     );
   }
-
   return (
     <SendContainer>
-      <Title>Send with Keyword</Title>
+      <Title>Receive Funds</Title>
       <FormCard>
         <form onSubmit={handleSubmit}>
           <FormGroup>

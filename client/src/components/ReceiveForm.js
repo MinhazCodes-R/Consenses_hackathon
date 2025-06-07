@@ -121,7 +121,7 @@ const ReceiveForm = () => {
 
   return (
     <ReceiveContainer>
-      <Title>Request XLM</Title>
+      <Title>Send Funds</Title>
 
       <Card>
         {error && <Error>{error}</Error>}
