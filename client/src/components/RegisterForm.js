@@ -154,9 +154,7 @@ const RegisterForm = () => {
     <FormContainer>
       <Title>Create Account</Title>
 
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-
-      <Form onSubmit={handleSubmit}>
+      {error && <ErrorMessage>{error}</ErrorMessage>}      <Form onSubmit={handleSubmit}>
         <FormGroup>
           <Label>Username</Label>
           <Input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
@@ -176,6 +174,17 @@ const RegisterForm = () => {
           <Label>Confirm Password</Label>
           <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
         </FormGroup>
+        
+        <StellarInfoBox>
+          <p>You need to create a Stellar account and fund it with testnet funds.</p>
+          <StellarLink 
+            href="https://laboratory.stellar.org/#account-creator?network=test" 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            Click here to create a Stellar testnet account
+          </StellarLink>
+        </StellarInfoBox>
 
         <FormGroup>
           <Label>Public Key</Label>
@@ -185,9 +194,7 @@ const RegisterForm = () => {
         <FormGroup>
           <Label>Private Key</Label>
           <Input type="text" value={privateKey} onChange={(e) => setPrivateKey(e.target.value)} required placeholder="S..." />
-        </FormGroup>
-
-        <Button type="submit" disabled={loading}>
+        </FormGroup>        <Button type="submit" disabled={loading}>
           {loading ? 'Creating Account...' : 'Register'}
         </Button>
       </Form>
@@ -195,17 +202,6 @@ const RegisterForm = () => {
       <LoginLink>
         Already have an account?<Link to="/login">Login</Link>
       </LoginLink>
-
-      <StellarInfoBox>
-        <p>You need to create a Stellar account and fund it with testnet funds.</p>
-        <StellarLink 
-          href="https://laboratory.stellar.org/#account-creator?network=test" 
-          target="_blank" 
-          rel="noopener noreferrer"
-        >
-          Click here to create a Stellar testnet account
-        </StellarLink>
-      </StellarInfoBox>
     </FormContainer>
   );
 };
