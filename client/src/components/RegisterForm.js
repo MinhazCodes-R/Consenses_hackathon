@@ -91,6 +91,26 @@ const LoginLink = styled.div`
   }
 `;
 
+const StellarInfoBox = styled.div`
+  margin-top: ${props => props.theme.spacing.lg};
+  padding: ${props => props.theme.spacing.md};
+  background-color: rgba(138, 43, 226, 0.1);
+  border-radius: ${props => props.theme.borderRadius.medium};
+  text-align: center;
+  border: 1px dashed ${props => props.theme.colors.primary};
+`;
+
+const StellarLink = styled.a`
+  color: ${props => props.theme.colors.primary};
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  
+  &:hover {
+    color: ${props => props.theme.colors.primaryLight};
+  }
+`;
+
 const RegisterForm = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -175,6 +195,17 @@ const RegisterForm = () => {
       <LoginLink>
         Already have an account?<Link to="/login">Login</Link>
       </LoginLink>
+
+      <StellarInfoBox>
+        <p>You need to create a Stellar account and fund it with testnet funds.</p>
+        <StellarLink 
+          href="https://laboratory.stellar.org/#account-creator?network=test" 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          Click here to create a Stellar testnet account
+        </StellarLink>
+      </StellarInfoBox>
     </FormContainer>
   );
 };
