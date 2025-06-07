@@ -96,13 +96,11 @@ const Dashboard = () => {
         <Subtitle>Manage your Stellar assets and transactions</Subtitle>
       </DashboardHeader>
 
-      <WalletCard publicKey={currentUser.publicKey} />
-
-      <ActionButtons>
-        <ActionButton to="/send" $primary>
+      <WalletCard publicKey={currentUser.publicKey} />      <ActionButtons>
+        <ActionButton to="/receive" $primary>
           <span className="icon">📤</span> Send Funds
         </ActionButton>
-        <ActionButton to="/receive">
+        <ActionButton to="/send">
           <span className="icon">📥</span> Receive Funds
         </ActionButton>
       </ActionButtons>
