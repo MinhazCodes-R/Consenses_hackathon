@@ -2,7 +2,7 @@
 
 StellarSphere is a modern cryptocurrency wallet and escrow payment platform built on the Stellar blockchain network, designed with a sleek black and purple UI. The application enables secure peer-to-peer transactions using an escrow mechanism.
 
-[Website](https://consenses-hackathon-zt67.vercel.app/login)
+[Website](https://consenses-hackathon-zt67.vercel.app/login)  
 [Live Demo](https://www.linkedin.com/posts/minhazur-rakin_wow-this-post-was-long-overdue-had-activity-7336959400865079296-DX0D?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAEL7kcsBdemOIbQqDztewRPwMQ30CKi8zIo) 
 
 ## Core Features
