@@ -178,7 +178,7 @@ const RegisterForm = () => {
         <StellarInfoBox>
           <p>You need to create a Stellar account and fund it with testnet funds.</p>
           <StellarLink 
-            href="https://laboratory.stellar.org/#account-creator?network=test" 
+            href="https://lab.stellar.org/account/create?$=network$id=testnet&label=Testnet&horizonUrl=https:////horizon-testnet.stellar.org&rpcUrl=https:////soroban-testnet.stellar.org&passphrase=Test%20SDF%20Network%20/;%20September%202015;;" 
             target="_blank" 
             rel="noopener noreferrer"
           >
